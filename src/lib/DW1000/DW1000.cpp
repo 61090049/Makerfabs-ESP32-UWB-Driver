@@ -166,12 +166,14 @@ void DW1000Class::begin(uint8_t irq, uint8_t rst) {
 	// generous initial init/wake-up-idle delay
 	delay(5);
 	// Configure the IRQ pin as INPUT. Required for correct interrupt setting for ESP8266
-    	pinMode(irq, INPUT);
+    pinMode(irq, INPUT);
 	// start SPI
 	SPI.begin();
-#ifndef ESP8266
-	SPI.usingInterrupt(digitalPinToInterrupt(irq)); // not every board support this, e.g. ESP8266
-#endif
+
+//#ifndef ESP8266
+//	SPI.usingInterrupt(digitalPinToInterrupt(irq)); // not every board support this, e.g. ESP8266
+//#endif
+
 	// pin and basic member setup
 	_rst        = rst;
 	_irq        = irq;
