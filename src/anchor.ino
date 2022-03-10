@@ -1,6 +1,6 @@
 #include <SPI.h>
 #include "lib/DW1000/DW1000Ranging.h"
-#include "config.h"
+#include "config_anc.h"
 
 #define DEV_ADDR ADDR_ANCHOR_1
 
