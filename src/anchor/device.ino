@@ -1,8 +1,8 @@
 #include <SPI.h>
-#include "lib/DW1000/DW1000Ranging.h"
-#include "config_tag.h"
+#include "../lib/DW1000/DW1000Ranging.h"
+#include "config.h"
 
-#define DEV_ADDR ADDR_TAG_1
+#define DEV_ADDR ADDR_ANCHOR_1
 
 #define SPI_SCK 18
 #define SPI_MISO 19
@@ -21,12 +21,17 @@ void setup()
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
     DW1000Ranging.initCommunication(PIN_RST, PIN_SS, PIN_IRQ);
     DW1000Ranging.attachNewRange(newRange);
-    DW1000Ranging.attachNewDevice(newDevice);
+    DW1000Ranging.attachBlinkDevice(newBlink);
     DW1000Ranging.attachInactiveDevice(inactiveDevice);
 
     //DW1000Ranging.useRangeFilter(true);
 
-    DW1000Ranging.startAsTag(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER);
+    DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    //DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
+    //DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
+    //DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_SHORTDATA_FAST_ACCURACY);
+    //DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_LONGDATA_FAST_ACCURACY);
+    //DW1000Ranging.startAsAnchor(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_ACCURACY);
 }
 
 void loop()
@@ -46,9 +51,9 @@ void newRange()
     Serial.println(" dBm");
 }
 
-void newDevice(DW1000Device *device)
+void newBlink(DW1000Device *device)
 {
-    Serial.print("ranging init; 1 device added ! -> ");
+    Serial.print("blink; 1 device added ! -> ");
     Serial.print(" short:");
     Serial.println(device->getShortAddress(), HEX);
 }
