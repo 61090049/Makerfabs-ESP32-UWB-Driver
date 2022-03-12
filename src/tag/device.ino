@@ -14,7 +14,7 @@
 
 const uint8_t PIN_RST = 27;
 const uint8_t PIN_IRQ = 34;
-const uint8_t PIN_SS = 4;  
+const uint8_t PIN_SS = 4;
 
 const char* ssid = SERV_TAG_SSID;
 const char* pass = SERV_TAG_PWD;
@@ -28,139 +28,177 @@ StaticJsonDocument<250> jsonDocument;
 char jsonBuffer[250];
 String pageBuffer = "";
 
+struct Anchor{
+    bool isActive = false;
+    uint16_t address;
+    float range;
+    float rx_power;
+} currentDevices[MAX_ANCHOR];
+
 //========================= Main ==========================
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
+    Serial.begin(115200);
+    delay(1000);
 
-  SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-  DW1000Ranging.initCommunication(PIN_RST, PIN_SS, PIN_IRQ);
-  DW1000Ranging.attachNewRange(newRange);
-  DW1000Ranging.attachNewDevice(newDevice);
-  DW1000Ranging.attachInactiveDevice(inactiveDevice);
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+    DW1000Ranging.initCommunication(PIN_RST, PIN_SS, PIN_IRQ);
+    DW1000Ranging.attachNewRange(newRange);
+    DW1000Ranging.attachNewDevice(newDevice);
+    DW1000Ranging.attachInactiveDevice(inactiveDevice);
 
-  //DW1000Ranging.useRangeFilter(true);
+    //DW1000Ranging.useRangeFilter(true);
 
-  DW1000Ranging.startAsTag(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER);
+    DW1000Ranging.startAsTag(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER);
 
-  WiFi.softAP(ssid, pass);
-  WiFi.softAPConfig(local, gateway, subnet);
-  delay(100);
-  
-  buildPageInfo();
-  server.on("/",getPageInfo);
-  server.onNotFound(getPageError);
+    WiFi.softAP(ssid, pass);
+    WiFi.softAPConfig(local, gateway, subnet);
+    delay(100);
+    
+    buildPageInfo();
+    server.on("/",getPageInfo);
+    server.onNotFound(getPageError);
 
-  server.on("/api/",getAPIAll);
-  server.on("/api/name",getAPIName);
+    server.on("/api/",getAPIAll);
+    server.on("/api/name",getAPIName);
 
-  server.begin();
-  
-  Serial.println("Initialization Completed.");
+    server.begin();
+    
+    Serial.println("Initialization Completed.");
 }
 void loop() {
-  DW1000Ranging.loop();
-  server.handleClient();
+    DW1000Ranging.loop();
+    server.handleClient();
 }
 
-//================== DWB1000 Controls =====================
-
+//================== DWM1000 Controls =====================
 void newRange()
 {
+    uint16_t address = DW1000Ranging.getDistantDevice()->getShortAddress();
+    float range = DW1000Ranging.getDistantDevice()->getRange();
+    float rx_power = DW1000Ranging.getDistantDevice()->getRXPower();
+
+    for(int i=0;i < MAX_ANCHOR;i++){
+        if(!currentDevices[i].isActive||currentDevices[i].address!=address){continue;}
+        currentDevices[i].range = range;
+        currentDevices[i].rx_power = rx_power;
+        break;
+    }
+
+    #ifdef DEBUG_MODE
     Serial.print("from: ");
-    Serial.print(DW1000Ranging.getDistantDevice()->getShortAddress(), HEX);
+    Serial.print(address, HEX);
     Serial.print("\t Range: ");
-    Serial.print(DW1000Ranging.getDistantDevice()->getRange());
+    Serial.print(range);
     Serial.print(" m");
     Serial.print("\t RX power: ");
-    Serial.print(DW1000Ranging.getDistantDevice()->getRXPower());
+    Serial.print(rx_power);
     Serial.println(" dBm");
+    #endif
 }
 
 void newDevice(DW1000Device *device)
 {
+    uint16_t address = device->getShortAddress();
+    for(int i=0;i<MAX_ANCHOR;i++){
+        if(currentDevices[i].isActive){continue;}
+        currentDevices[i].address = address;
+        currentDevices[i].isActive = true;
+        break;
+    }
+
+    #ifdef DEBUG_MODE
     Serial.print("ranging init; 1 device added ! -> ");
     Serial.print(" short:");
-    Serial.println(device->getShortAddress(), HEX);
+    Serial.println(address, HEX);
+    #endif
 }
 
 void inactiveDevice(DW1000Device *device)
 {
+    uint16_t address = device->getShortAddress();
+    for(int i=0;i<MAX_ANCHOR;i++){
+        if(currentDevices[i].address!=address){continue;}
+        currentDevices[i].isActive = false;
+        break;
+    }
+
+    #ifdef DEBUG_MODE
     Serial.print("delete inactive device: ");
     Serial.println(device->getShortAddress(), HEX);
+    #endif
 }
 
 //================== Page Redirections ====================
 
 void getPageInfo() {
-  server.send(200, "text/html", pageBuffer); 
+    server.send(200, "text/html", pageBuffer); 
 }
 
 void getPageError(){
-  server.send(404, "text/plain", "Error 404: Page not found");
+    server.send(404, "text/plain", "Error 404: Page not found");
 }
 
 //================== API Redirections ====================
 
 void getAPIAll() {
-  jsonDocument.clear();
+    jsonDocument.clear();
 
-  appendToJson("Id", ID);
-  appendToJson("Name", getFullName());
-  appendToJson("Age", AGE);
-  appendToJson("EUI", ADDR_TAG_1);
+    jsonDocument["EUI"] = ADDR_TAG_1;
+    jsonDocument["ID"] = ID;
+    jsonDocument["Name"] = getFullName();
+    jsonDocument["Age"] = AGE;
+    
+    JsonArray anchorList = jsonDocument.createNestedArray("Anchor");
+    for(int i =0;i < MAX_ANCHOR;i++){
+        if(!currentDevices[i].isActive){continue;}
+        JsonObject anchorDevice = anchorList.createNestedObject();
+        anchorDevice["EUI"] = String(currentDevices[i].address);
+        anchorDevice["Range"] = String(currentDevices[i].range);
+        anchorDevice["Power"] = String(currentDevices[i].rx_power);
+    }
 
-  serializeJson(jsonDocument, jsonBuffer);
-  server.send(200, "application/json", jsonBuffer); 
+    serializeJson(jsonDocument, jsonBuffer);
+    server.send(200, "application/json", jsonBuffer); 
 }
 
 void getAPIName() {
-  jsonDocument.clear();
-
-  jsonDocument["tag"] = "Name";
-  jsonDocument["val"] = getFullName();
-
-  serializeJson(jsonDocument, jsonBuffer);  
-  server.send(200, "application/json", jsonBuffer);
+    jsonDocument.clear();
+    jsonDocument["Name"] = getFullName();
+    serializeJson(jsonDocument, jsonBuffer);  
+    server.send(200, "application/json", jsonBuffer);
 }
 
 //=============== Auxiliary Functions ====================
 
-void appendToJson(String tag, String value) {
-  JsonObject item = jsonDocument.createNestedObject();
-  item["tag"] = tag;
-  item["val"] = value;
-}
-
 String getFullName(){
-  String name = FNAME;
-  name.concat(" ");
-  name.concat(LNAME);
-  return name;
+    String name = FNAME;
+    name.concat(" ");
+    name.concat(LNAME);
+    return name;
 }
 
 //==================== HTML Page =======================
 
 void buildPageInfo(){
-  pageBuffer +="<!DOCTYPE html> <html>\n";
-  pageBuffer +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-  pageBuffer +="<title>Info Page</title>\n";
-  pageBuffer +="</head>\n";
-  pageBuffer +="<body>\n";
-  
-  pageBuffer +="<h5>ID: ";
-  pageBuffer += ID;
-  pageBuffer += "</h5>\n";
+    pageBuffer +="<!DOCTYPE html> <html>\n";
+    pageBuffer +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+    pageBuffer +="<title>Info Page</title>\n";
+    pageBuffer +="</head>\n";
+    pageBuffer +="<body>\n";
+    
+    pageBuffer +="<h5>ID: ";
+    pageBuffer += ID;
+    pageBuffer += "</h5>\n";
 
-  pageBuffer +="<h1>";
-  pageBuffer += getFullName();
-  pageBuffer += "</h1>\n";
+    pageBuffer +="<h1>";
+    pageBuffer += getFullName();
+    pageBuffer += "</h1>\n";
 
-  pageBuffer +="<h3>Age: ";
-  pageBuffer += AGE;
-  pageBuffer += "</h3>\n";
+    pageBuffer +="<h3>Age: ";
+    pageBuffer += AGE;
+    pageBuffer += "</h3>\n";
 
-  pageBuffer +="</body>\n";
-  pageBuffer +="</html>\n";
+    pageBuffer +="</body>\n";
+    pageBuffer +="</html>\n";
 }

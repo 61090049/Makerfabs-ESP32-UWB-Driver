@@ -41,6 +41,7 @@ void loop()
 
 void newRange()
 {
+    #ifdef DEBUG_MODE
     Serial.print("from: ");
     Serial.print(DW1000Ranging.getDistantDevice()->getShortAddress(), HEX);
     Serial.print("\t Range: ");
@@ -49,17 +50,22 @@ void newRange()
     Serial.print("\t RX power: ");
     Serial.print(DW1000Ranging.getDistantDevice()->getRXPower());
     Serial.println(" dBm");
+    #endif
 }
 
 void newBlink(DW1000Device *device)
 {
+    #ifdef DEBUG_MODE
     Serial.print("blink; 1 device added ! -> ");
     Serial.print(" short:");
     Serial.println(device->getShortAddress(), HEX);
+    #endif
 }
 
 void inactiveDevice(DW1000Device *device)
 {
+    #ifdef DEBUG_MODE
     Serial.print("delete inactive device: ");
     Serial.println(device->getShortAddress(), HEX);
+    #endif
 }
