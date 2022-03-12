@@ -59,8 +59,8 @@ void setup() {
     server.on("/",getPageInfo);
     server.onNotFound(getPageError);
 
-    server.on("/api/",getAPIAll);
-    server.on("/api/name",getAPIName);
+    server.on(API_ALL_LOC,getAPIAll);
+    server.on(API_NAME_LOC,getAPIName);
 
     server.begin();
     
