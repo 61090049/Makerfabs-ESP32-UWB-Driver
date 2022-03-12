@@ -1,5 +1,5 @@
 # Makerfabs ESP32 UWB Driver
-*Does not include any user-friendly interface, tracked with debugging port only.*
+*Does not include any user-friendly interface, output tracked with debugging port only.*
 
 ## Requirements 
 A minimum of two units of UWB Development Board from Makerfabs are required. One will act as an anchoring device and the other as a tagging device.
