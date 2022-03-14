@@ -1,5 +1,6 @@
 #include <SPI.h>
-#include "../lib/DW1000/DW1000Ranging.h"
+#include "../lib/DW1000/DW1000Ranging.h"    //non-Arduino IDE
+//#include <DW1000Ranging.h>                  //If modified to base library directly
 #include "config.h"
 
 #define DEV_ADDR ADDR_ANCHOR_1

@@ -2,7 +2,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ArduinoJson.h>
-#include "../lib/DW1000/DW1000Ranging.h"
+#include "../lib/DW1000/DW1000Ranging.h"    //non-Arduino IDE
+//#include <DW1000Ranging.h>                //If modified to base library directly
 #include "config.h"
 #include "profile.h"
 
