@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no\">
+    <title>User Card</title>
+</head>
+
+<body>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -75%);
+        }
+
+        .content-table {
+            border-collapse: collapse;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 0.9em;
+            min-width: 250px;
+            border-radius: 5px 5px 5px 5px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-table thead tr {
+            background-color: #ff692e;
+            color: #ffffff;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .content-table th,
+        .content-table td {
+            padding: 15px 15px;
+        }
+
+        .content-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .content-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .content-table tbody td.color-row {
+            font-weight: bold;
+            color: #ff692e;
+        }
+
+        .header {text-align: center; font-family: Verdana;}
+        .footer {text-align: center; font-family: Courier; color: #bbbbbb;}
+    
+    </style>
+    <div class="container">
+        <h1 class="header">User Card</h1>
+        <h5 class="footer">Demo is not indicative of the final product.</h5>
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Something</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="color-row">First Name</td>
+                    <td>Something</td>
+                </tr>
+                <tr>
+                    <td class="color-row">Last Name</td>
+                    <td>Something</td>
+                </tr>
+                <tr>
+                    <td class="color-row">Age</td>
+                    <td>Something</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

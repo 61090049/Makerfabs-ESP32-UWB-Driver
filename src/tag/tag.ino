@@ -2,16 +2,16 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ArduinoJson.h>
-#include "../lib/DW1000/DW1000Ranging.h"    //non-Arduino IDE
-//#include <DW1000Ranging.h>                //If modified to base library directly
+#include "../lib/DW1000/DW1000Ranging.h"
+//#include <DW1000Ranging.h>
 #include "config.h"
 #include "profile.h"
 
 #define DEV_ADDR ADDR_TAG_1
-#define SPI_SCK 18
-#define SPI_MISO 19
-#define SPI_MOSI 23
-#define DW_CS 4
+//#define SPI_SCK 18
+//#define SPI_MISO 19
+//#define SPI_MOSI 23
+//#define DW_CS 4
 
 const uint8_t PIN_RST = 27;
 const uint8_t PIN_IRQ = 34;
@@ -42,7 +42,7 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
 
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+    //SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
     DW1000Ranging.initCommunication(PIN_RST, PIN_SS, PIN_IRQ);
     DW1000Ranging.attachNewRange(newRange);
     DW1000Ranging.attachNewDevice(newDevice);
@@ -50,7 +50,7 @@ void setup() {
 
     //DW1000Ranging.useRangeFilter(true);
 
-    DW1000Ranging.startAsTag(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER);
+    DW1000Ranging.startAsTag(DEV_ADDR, DW1000.MODE_LONGDATA_RANGE_ACCURACY);
 
     WiFi.softAP(ssid, pass);
     WiFi.softAPConfig(local, gateway, subnet);
@@ -130,7 +130,7 @@ void inactiveDevice(DW1000Device *device)
     #endif
 }
 
-//================== Page Redirections ====================
+//================== Page Call Handler ====================
 
 void getPageInfo() {
     server.send(200, "text/html", pageBuffer); 
@@ -140,7 +140,7 @@ void getPageError(){
     server.send(404, "text/plain", "Error 404: Page not found");
 }
 
-//================== API Redirections ====================
+//================== API Call Handler ====================
 
 void getAPIAll() {
     jsonDocument.clear();
@@ -182,24 +182,101 @@ String getFullName(){
 //==================== HTML Page =======================
 
 void buildPageInfo(){
-    pageBuffer +="<!DOCTYPE html> <html>\n";
-    pageBuffer +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-    pageBuffer +="<title>Info Page</title>\n";
+    pageBuffer +="<!DOCTYPE html>\n";
+    pageBuffer +="<html>\n";
+
+    pageBuffer +="<head>\n";
+    pageBuffer +="<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0, user-scalable=no\\\">\n";
+    pageBuffer +="<title>User Card</title>\n";
     pageBuffer +="</head>\n";
+
     pageBuffer +="<body>\n";
+    pageBuffer +="<style>\n";
+    pageBuffer +="* {\n";
+    pageBuffer +="font-family: sans-serif;\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".container {\n";
+    pageBuffer +="position: absolute;\n";
+    pageBuffer +="top: 50%;\n";
+    pageBuffer +="left: 50%;\n";
+    pageBuffer +="transform: translate(-50%, -50%);\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table {\n";
+    pageBuffer +="border-collapse: collapse;\n";
+    pageBuffer +="margin-left: auto;\n";
+    pageBuffer +="margin-right: auto;\n";
+    pageBuffer +="font-size: 0.9em;\n";
+    pageBuffer +="min-width: 250px;\n";
+    pageBuffer +="border-radius: 5px 5px 5px 5px;\n";
+    pageBuffer +="overflow: hidden;\n";
+    pageBuffer +="box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table thead tr {\n";
+    pageBuffer +="background-color: #ff692e;\n";
+    pageBuffer +="color: #ffffff;\n";
+    pageBuffer +="text-align: left;\n";
+    pageBuffer +="font-weight: bold;\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table th,\n";
+    pageBuffer +=".content-table td {\n";
+    pageBuffer +="padding: 15px 15px;\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table tbody tr {\n";
+    pageBuffer +="border-bottom: 1px solid #dddddd;\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table tbody tr:nth-of-type(even) {\n";
+    pageBuffer +="background-color: #f3f3f3;\n";
+    pageBuffer +="}\n";
+
+    pageBuffer +=".content-table tbody td.color-row {\n";
+    pageBuffer +="font-weight: bold;\n";
+    pageBuffer +="color: #ff692e;\n";
+    pageBuffer +="}\n";
+    pageBuffer +=".header {text-align: center; font-family: Verdana;}\n";
+    pageBuffer +=".footer {text-align: center; font-family: Courier; color: #bbbbbb}\n";
     
-    pageBuffer +="<h5>ID: ";
-    pageBuffer += ID;
-    pageBuffer += "</h5>\n";
-
-    pageBuffer +="<h1>";
-    pageBuffer += getFullName();
-    pageBuffer += "</h1>\n";
-
-    pageBuffer +="<h3>Age: ";
-    pageBuffer += AGE;
-    pageBuffer += "</h3>\n";
-
+    pageBuffer +="</style>\n";
+    pageBuffer +="<div class=\"container\">\n";
+    pageBuffer +="<h1 class=\"header\">User Card</h1>\n";
+    pageBuffer +="<h5 class=\"footer\">Demo is not indicative of the final product.</h5>\n";
+    pageBuffer +="<table class=\"content-table\">\n";
+    pageBuffer +="<thead>\n";
+    pageBuffer +="<tr>\n";
+    pageBuffer +="<th>ID</th>\n";
+    pageBuffer +="<th>\n";
+    pageBuffer +=ID;
+    pageBuffer +="</th>\n";
+    pageBuffer +="</tr>\n";
+    pageBuffer +="</thead>\n";
+    pageBuffer +="<tbody>\n";
+    pageBuffer +="<tr>\n";
+    pageBuffer +="<td class=\"color-row\">First Name</td>\n";
+    pageBuffer +="<td>\n";
+    pageBuffer +=FNAME;
+    pageBuffer +="</td>\n";
+    pageBuffer +="</tr>\n";
+    pageBuffer +="<tr>\n";
+    pageBuffer +="<td class=\"color-row\">Last Name</td>\n";
+    pageBuffer +="<td>\n";
+    pageBuffer +=LNAME;
+    pageBuffer +="</td>\n";
+    pageBuffer +="</tr>\n";
+    pageBuffer +="<tr>\n";
+    pageBuffer +="<td class=\"color-row\">Age</td>\n";
+    pageBuffer +="<td>\n";
+    pageBuffer +=AGE;
+    pageBuffer +="</td>\n";
+    pageBuffer +="</tr>\n";
+    pageBuffer +="</tbody>\n";
+    pageBuffer +="</table>\n";
+    pageBuffer +="</div>\n";
     pageBuffer +="</body>\n";
+
     pageBuffer +="</html>\n";
 }

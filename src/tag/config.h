@@ -4,7 +4,7 @@
 #define ADDR_TAG_1      "7D:00:22:EA:82:60:3B:9C"
 
 #define SERV_TAG_SSID   "UWB_Tag_1"
-#define SERV_TAG_PWD    "123"
+#define SERV_TAG_PWD    "12345678"
 
 static const int IP_ADDR[4] = {192,168,80,1};
 static const int IP_GATEWAY[4] = {192,168,80,1};

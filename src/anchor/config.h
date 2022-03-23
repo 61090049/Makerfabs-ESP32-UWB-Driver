@@ -4,6 +4,6 @@
 #define ADDR_ANCHOR_1   "83:17:5B:D5:A9:9A:E2:9C"
 #define ADDR_ANCHOR_2   "84:17:5B:D5:A9:9A:E2:9C"
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #endif
