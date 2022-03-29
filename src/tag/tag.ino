@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ArduinoJson.h>
-#include "../lib/DW1000/DW1000Ranging.h"
-//#include <DW1000Ranging.h>
+//#include "../lib/DW1000/DW1000Ranging.h"
+#include <DW1000Ranging.h>
 #include "config.h"
 #include "profile.h"
 
@@ -25,7 +25,7 @@ IPAddress gateway(IP_GATEWAY[0],IP_GATEWAY[1],IP_GATEWAY[2],IP_GATEWAY[3]);
 IPAddress subnet(IP_SUBNET[0],IP_SUBNET[1],IP_SUBNET[2],IP_SUBNET[3]);
 WebServer server(PORT);
 
-StaticJsonDocument<250> jsonDocument;
+StaticJsonDocument<768> jsonDocument;
 char jsonBuffer[250];
 String pageBuffer = "";
 
@@ -80,7 +80,16 @@ void newRange()
     float rx_power = DW1000Ranging.getDistantDevice()->getRXPower();
 
     for(int i=0;i < MAX_ANCHOR;i++){
-        if(!currentDevices[i].isActive||currentDevices[i].address!=address){continue;}
+      //Serial.print("ANC:");
+      //Serial.print(i);
+      //Serial.print(">>");
+        if(!currentDevices[i].isActive||currentDevices[i].address!=address){
+          //Serial.println("SKIP");
+          continue;
+          }
+         //Serial.print(currentDevices[i].address);
+         //Serial.print(":");
+         //Serial.println(address);
         currentDevices[i].range = range;
         currentDevices[i].rx_power = rx_power;
         break;
@@ -144,13 +153,14 @@ void getPageError(){
 
 void getAPIAll() {
     jsonDocument.clear();
-
-    jsonDocument["EUI"] = ADDR_TAG_1;
-    jsonDocument["ID"] = ID;
-    jsonDocument["Name"] = getFullName();
-    jsonDocument["Age"] = AGE;
     
-    JsonArray anchorList = jsonDocument.createNestedArray("Anchor");
+    JsonObject tag = jsonDocument["tag"].createNestedObject();
+    tag["EUI"] = ADDR_TAG_1;
+    tag["ID"] = ID;
+    tag["Name"] = getFullName();
+    tag["Age"] = AGE;
+    
+    JsonArray anchorList = tag.createNestedArray("Anchor");
     for(int i =0;i < MAX_ANCHOR;i++){
         if(!currentDevices[i].isActive){continue;}
         JsonObject anchorDevice = anchorList.createNestedObject();

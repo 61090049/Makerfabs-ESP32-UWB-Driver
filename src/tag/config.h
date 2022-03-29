@@ -16,6 +16,6 @@ static const int IP_SUBNET[4] = {255,255,255,0};
 
 #define MAX_ANCHOR 4
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #endif
