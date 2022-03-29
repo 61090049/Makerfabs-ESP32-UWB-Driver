@@ -57,6 +57,7 @@ void setup() {
     delay(100);
     
     buildPageInfo();
+    server.enableCORS();
     server.on("/",getPageInfo);
     server.onNotFound(getPageError);
 
@@ -154,7 +155,7 @@ void getPageError(){
 void getAPIAll() {
     jsonDocument.clear();
     
-    JsonObject tag = jsonDocument["tag"].createNestedObject();
+    JsonObject tag = jsonDocument.createNestedObject();
     tag["EUI"] = ADDR_TAG_1;
     tag["ID"] = ID;
     tag["Name"] = getFullName();
